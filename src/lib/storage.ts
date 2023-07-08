@@ -29,7 +29,6 @@ export const createBrowserStore = <T>(key: string, placeholder: T): Writable<T> 
 	return store;
 };
 
-
 export const freePtr = (ptr: string) => {
 	for (let i = 0; i < localStorage.length; i++) {
 		const key = localStorage.key(i);
@@ -39,3 +38,43 @@ export const freePtr = (ptr: string) => {
 		}
 	}
 };
+
+export function exportBackup() {
+	console.debug('Downloading backup');
+	downloadObjectAsJson(localStorage, 'resume');
+}
+
+export function importBackup() {
+	console.debug('Opening file selector');
+	const input = document.createElement('input');
+	input.type = 'file';
+	input.accept = '.json';
+	input.click();
+	input.onchange = (e) => {
+		const reader = new FileReader();
+		const target = e.currentTarget as HTMLInputElement;
+		const files = target.files;
+		if ((files?.length ?? 0) < 1 || files === null) return console.error("No files uploaded");
+		reader.readAsText(files[0], 'UTF-8');
+		reader.onload = (e) => {
+			if (!e.target) return console.error("No target on onload event");
+			const contents = e.target.result as string;
+			const json = JSON.parse(contents);
+			const entries = Object.entries(json);
+			for (let [k, v] of entries) {
+				console.debug([k, v]);
+				localStorage.setItem(k, v as string);
+			}
+		};
+	};
+}
+
+function downloadObjectAsJson(obj: object, filename: string) {
+	var dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(obj));
+	var downloadAnchorNode = document.createElement('a');
+	downloadAnchorNode.setAttribute('href', dataStr);
+	downloadAnchorNode.setAttribute('download', filename + '.json');
+	document.body.appendChild(downloadAnchorNode); // required for firefox
+	downloadAnchorNode.click();
+	downloadAnchorNode.remove();
+}

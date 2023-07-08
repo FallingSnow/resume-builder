@@ -1,5 +1,6 @@
 <script>
 	import Icon from '$components/Icon.svelte';
+	import { exportBackup, importBackup } from '$lib/storage';
 	import './styles.less';
 
 	let showEditable = false;
@@ -9,6 +10,8 @@
 <div class="app">
 	<div class="control-bar">
 		<button on:click={() => showEditable = !showEditable}><Icon>edit</Icon></button>
+		<button on:click={() => exportBackup()}><Icon>download</Icon></button>
+		<button on:click={() => importBackup()}><Icon>upload</Icon></button>
 	</div>
 	<main class={showEditable ? 'show-editable' : ''}>
 		<slot />
